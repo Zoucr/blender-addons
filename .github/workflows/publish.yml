@@ -1,0 +1,63 @@
+name: Publish Blender extensions
+
+on:
+  push:
+    branches: [main]
+    paths: ['addons/**', 'scripts/**', 'tests/**', '.github/workflows/publish.yml']
+  pull_request:
+    paths: ['addons/**', 'scripts/**', 'tests/**', '.github/workflows/publish.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: blender-extensions-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test repository tooling
+        run: python -m unittest discover -s tests -v
+      - name: Install Blender packaging tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --output "$RUNNER_TEMP/blender.tar.xz" https://download.blender.org/release/Blender4.5/blender-4.5.3-linux-x64.tar.xz
+          tar -xf "$RUNNER_TEMP/blender.tar.xz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/blender-4.5.3-linux-x64" >> "$GITHUB_PATH"
+      - name: Build and validate extension repository
+        run: python scripts/build_repository.py
+      - name: Upload build for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: blender-extension-repository
+          path: dist/
+          retention-days: 14
+      - name: Prepare Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-22.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy extension feed
+        id: deployment
+        uses: actions/deploy-pages@v4
