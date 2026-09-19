@@ -3,6 +3,15 @@
 One home for add-ons built with Codex, ChatGPT, or by hand. Source lives here;
 GitHub Actions builds the installable ZIPs and a public Blender extension feed.
 
+## Add-ons
+
+| Add-on | Version | Location in Blender |
+| --- | --- | --- |
+| [Camera Path Rig](addons/camera_path_rig/README.txt) | 1.9.0 | 3D View > N sidebar > Camera Path |
+
+See [import notes and validation](docs/imports/camera_path_rig-1.9.0.md) for
+compatibility and existing-installation guidance.
+
 ## Connect Blender (after the first successful Pages deployment)
 
 In Preferences > Get Extensions, open the repository settings, add a Remote
@@ -13,8 +22,8 @@ https://zoucr.github.io/blender-addons/index.json
 ```
 
 Allow online access when prompted. Refresh the repository to see published
-extensions and available updates. Nothing appears until the first real add-on
-is imported and published. A normal GitHub repository URL does not work here.
+extensions and available updates. Add-ons appear after their changes are merged
+and the Pages deployment succeeds. A normal GitHub repository URL does not work here.
 
 ## One-time GitHub setup
 
