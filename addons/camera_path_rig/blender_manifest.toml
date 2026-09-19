@@ -1,0 +1,13 @@
+schema_version = "1.0.0"
+
+id = "camera_path_rig"
+version = "1.9.0"
+name = "Camera Path Rig"
+tagline = "Create editable camera-on-curve rigs with precise timing"
+maintainer = "Lucca / OpenAI Codex"
+
+type = "add-on"
+tags = ["Camera", "Animation", "Rigging", "Add Curve"]
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]

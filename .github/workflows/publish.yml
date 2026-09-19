@@ -34,6 +34,8 @@ jobs:
           echo "$RUNNER_TEMP/blender-4.5.3-linux-x64" >> "$GITHUB_PATH"
       - name: Build and validate extension repository
         run: python scripts/build_repository.py
+      - name: Smoke test Camera Path Rig in Blender
+        run: blender --background --factory-startup --python-exit-code 1 --python tests/blender_camera_path_rig.py
       - name: Upload build for inspection
         uses: actions/upload-artifact@v4
         with:
