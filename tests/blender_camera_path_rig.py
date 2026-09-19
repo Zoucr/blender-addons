@@ -12,7 +12,7 @@ import bpy
 source = Path(__file__).resolve().parents[1] / "addons"
 repo = bpy.context.preferences.extensions.repos.new(
     name="Camera Path Rig Test", module="cpr_import_test",
-    directory=str(source),
+    custom_directory=str(source),
 )
 module_name = "bl_ext.cpr_import_test.camera_path_rig"
 errors = []
