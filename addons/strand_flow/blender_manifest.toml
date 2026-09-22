@@ -1,0 +1,12 @@
+schema_version = "1.0.0"
+id = "strand_flow"
+version = "2.0.0"
+name = "Strand Flow"
+tagline = "Guide-driven strands with gradient materials and moving trails"
+maintainer = "Lucca / OpenAI"
+type = "add-on"
+blender_version_min = "5.2.0"
+license = ["SPDX:GPL-3.0-or-later"]
+tags = ["Add Curve", "Animation", "Material"]
+[build]
+paths_exclude_pattern = ["__pycache__/", "/.git/", "*.pyc", "/tests/"]
