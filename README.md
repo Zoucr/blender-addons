@@ -7,6 +7,7 @@ GitHub Actions builds the installable ZIPs and a public Blender extension feed.
 
 | Add-on | Version | Location in Blender |
 | --- | --- | --- |
+| [Strand Flow](addons/strand_flow/README.md) | 2.0.0 | 3D View > N sidebar > Strand Flow |
 | [Camera Path Rig](addons/camera_path_rig/README.txt) | 1.9.0 | 3D View > N sidebar > Camera Path |
 
 See [import notes and validation](docs/imports/camera_path_rig-1.9.0.md) for
