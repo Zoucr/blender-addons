@@ -1,5 +1,5 @@
 bl_info = {
-    'name': 'Strand Flow', 'author': 'Lucca / OpenAI', 'version': (5, 1, 0),
+    'name': 'Strand Flow', 'author': 'Lucca / OpenAI', 'version': (5, 1, 1),
     'blender': (5, 2, 0), 'location': 'View3D > Sidebar > Strand Flow',
     'description': 'Guide-driven 3D strand bundles, ribbons, exclusion zones and gradient material',
     'category': 'Add Curve',
@@ -19,6 +19,7 @@ from bpy.app.handlers import persistent
 
 _BUSY = False
 _PENDING = {}
+_NEEDS_INITIAL_SCAN = False
 
 def dirty(self, context):
     if _BUSY or morph.BAKING: return
@@ -684,7 +685,11 @@ def schedule_live_upgrade(_dummy=None):
             _PENDING[obj.name]=time.monotonic()
 
 def tick():
+    global _NEEDS_INITIAL_SCAN
     if not hasattr(bpy.types.Object,'sf'): return None
+    if _NEEDS_INITIAL_SCAN:
+        schedule_live_upgrade()
+        _NEEDS_INITIAL_SCAN = False
     if morph.BAKING or morph.is_rendering(): return .3
     now=time.monotonic()
     for name,stamp in list(_PENDING.items()):
@@ -704,6 +709,7 @@ def tick():
 
 classes=(SFGuide,SFSettings,SF_OT_create,SF_OT_update,SF_OT_guide,SF_OT_demo,SF_UL_guides,SF_PT_main,SF_PT_guides,SF_PT_distribution,SF_PT_shape,SF_PT_exclusions,SF_PT_material,SF_OT_particle_mode,SF_OT_single_trail,SF_OT_particle_option,SF_PT_particles)
 def register():
+    global _NEEDS_INITIAL_SCAN
     if hasattr(bpy.types.Object,'sf'):
         raise RuntimeError('Another Strand Flow copy is enabled. Disable it and restart Blender before enabling V5.')
     registered=[]
@@ -715,9 +721,9 @@ def register():
         bpy.types.Scene.sf_system=PointerProperty(type=bpy.types.Object,poll=system_poll);scene_property_added=True
         bpy.app.handlers.depsgraph_update_post.append(changed)
         bpy.app.handlers.load_post.append(schedule_live_upgrade)
-        bpy.app.timers.register(tick,persistent=True)
+        _NEEDS_INITIAL_SCAN = True
+        bpy.app.timers.register(tick,first_interval=.1,persistent=True)
         bpy.app.handlers.frame_change_post.append(morph.preview_frame)
-        schedule_live_upgrade()
     except Exception:
         if morph.preview_frame in bpy.app.handlers.frame_change_post:bpy.app.handlers.frame_change_post.remove(morph.preview_frame)
         if changed in bpy.app.handlers.depsgraph_update_post:bpy.app.handlers.depsgraph_update_post.remove(changed)
@@ -735,6 +741,8 @@ def unregister():
     if schedule_live_upgrade in bpy.app.handlers.load_post: bpy.app.handlers.load_post.remove(schedule_live_upgrade)
     if bpy.app.timers.is_registered(tick): bpy.app.timers.unregister(tick)
     _PENDING.clear()
+    global _NEEDS_INITIAL_SCAN
+    _NEEDS_INITIAL_SCAN = False
     del bpy.types.Scene.sf_system; del bpy.types.Object.sf
     for cls in reversed(classes + morph.CLASSES + airflow.CLASSES + alpha.CLASSES + procedural.CLASSES + lighting.CLASSES): bpy.utils.unregister_class(cls)
 
