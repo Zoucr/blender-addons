@@ -1,4 +1,4 @@
-# Strand Flow 5.0
+# Strand Flow 5.1
 
 Live guide-driven strands for Blender 5.2+. One guide set feeds a Geometry Nodes system, with keyframeable wake deformation, ribbons or tubes, exclusion zones and shader trails. Render the animated range directly. No per-frame geometry bake is required for V5 systems.
 
@@ -23,6 +23,12 @@ In the **Material** panel:
 Use **Render Properties > Film > Transparent** and **Output Properties > Color > RGBA** for a transparent PNG sequence. Alpha is composited over the eventual background. If you want a faint, translucent strand, its visible brightness will depend on that background. For editing in Blender's compositor, keep the render's premultiplied alpha convention; convert only at the boundary of an application that requires straight alpha.
 
 Shader trails have transparent gaps, so Output Opacity cannot turn those gaps into continuous strands. Choose **Continuous** under Trail Particles if you want solid strands.
+
+## Light the surroundings
+
+Enable **Light the Surroundings** in the Material panel to create up to eight real point lights following the guide curves. This gives Eevee a controllable lighting effect on nearby objects. The lights use Follow Path constraints and drivers, so moving and animated guides work during final renders. **Active Lights**, **Total Power**, **Light Radius**, **Light Color** and **Light Start/End** control the rig; Total Power is divided across active lights. Toggle off to set their energy to zero. Turn it on once before keyframing the toggle, so the rig exists in the saved scene. Press **Refresh Guide Lights** after replacing guides or reversing their direction.
+
+The lights approximate the guide paths, not every generated strand, shader particle or outward wake deformation. In Cycles, the emission material can already illuminate other surfaces; these additional point lights are optional and may double the illumination. The rig lives in a separate collection, and Blender may show its light objects in the viewport. Blender 5.0 projects keep the setting off until you enable it.
 
 ## Shape and animation
 

@@ -1,5 +1,5 @@
 bl_info = {
-    'name': 'Strand Flow', 'author': 'Lucca / OpenAI', 'version': (5, 0, 0),
+    'name': 'Strand Flow', 'author': 'Lucca / OpenAI', 'version': (5, 1, 0),
     'blender': (5, 2, 0), 'location': 'View3D > Sidebar > Strand Flow',
     'description': 'Guide-driven 3D strand bundles, ribbons, exclusion zones and gradient material',
     'category': 'Add Curve',
@@ -9,11 +9,11 @@ import math
 import random
 import bisect
 from .particles import ensure_particles, NODE_NAME
-from . import morph, airflow, alpha, wake, procedural
+from . import morph, airflow, alpha, wake, procedural, lighting
 import time
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
-from bpy.props import (BoolProperty, IntProperty, FloatProperty, EnumProperty,
+from bpy.props import (BoolProperty, IntProperty, FloatProperty, FloatVectorProperty, EnumProperty,
                        PointerProperty, CollectionProperty, StringProperty)
 from bpy.app.handlers import persistent
 
@@ -36,6 +36,16 @@ def morph_dirty(self, context):
     dirty(self, context)
     if not _BUSY and not morph.BAKING and self.is_system and self.morph_preview:
         _PENDING[self.id_data.name] = time.monotonic()
+
+def lighting_toggled(self, context):
+    owner = self.id_data
+    if isinstance(owner, bpy.types.Object) and self.is_system and self.light_enabled and not self.light_rig:
+        lighting.rebuild(owner, context.scene)
+
+def lighting_appearance(self, context):
+    owner = self.id_data
+    if isinstance(owner, bpy.types.Object) and self.is_system:
+        lighting.sync_appearance(owner)
 
 def curve_poll(self, obj):
     return obj.type == 'CURVE'
@@ -98,6 +108,18 @@ class SFSettings(bpy.types.PropertyGroup):
     fade: FloatProperty(name='Fade Distance', default=.2, min=.0001, subtype='DISTANCE', update=dirty)
     status: StringProperty(default='Ready')
     material: PointerProperty(type=bpy.types.Material)
+    light_enabled: BoolProperty(name='Light the Surroundings', default=False, update=lighting_toggled,
+        description='Use a few real point lights along the guides to light nearby objects in Eevee')
+    light_count: IntProperty(name='Active Lights', default=4, min=1, max=8,
+        description='Number of guide lights to use; a maximum of eight are created')
+    light_power: FloatProperty(name='Total Power', default=30, min=0, soft_max=500, subtype='POWER')
+    light_radius: FloatProperty(name='Light Radius', default=.08, min=.001, soft_max=2,
+        subtype='DISTANCE', update=lighting_appearance)
+    light_color: FloatVectorProperty(name='Light Color', size=3, subtype='COLOR',
+        default=(.45, .7, 1), min=0, max=1, update=lighting_appearance)
+    light_start: FloatProperty(name='Light Start', default=.1, min=0, max=1, subtype='FACTOR')
+    light_end: FloatProperty(name='Light End', default=.9, min=0, max=1, subtype='FACTOR')
+    light_rig: PointerProperty(type=bpy.types.Collection)
 
 def resample(poly, count):
     distances = [0.0]
@@ -535,6 +557,21 @@ class SF_PT_material(SFPanel,bpy.types.Panel):
             for name in ['Output Opacity','Alpha from Brightness','Minimum Alpha']:
                 l.prop(opacity.inputs[name],'default_value',text=name)
             l.label(text='For PNG export: Film Transparent + RGBA')
+        l.separator()
+        system=current_system(context)
+        s=system.sf
+        l.prop(s,'light_enabled')
+        if s.light_enabled:
+            l.prop(s,'light_count')
+            l.prop(s,'light_power')
+            l.prop(s,'light_radius')
+            l.prop(s,'light_color')
+            row=l.row(align=True)
+            row.prop(s,'light_start');row.prop(s,'light_end')
+            l.operator('sf.refresh_lights',text='Refresh Guide Lights')
+            l.label(text='Eevee proxy lights follow the guides.')
+        elif context.scene.render.engine == 'CYCLES':
+            l.label(text='Cycles also uses material emission as light.')
         if simple:
             for name in ['Color','Opacity','Edge Softness','Roughness','Emission']:
                 l.prop(style.inputs[name],'default_value',text=name)
@@ -672,7 +709,7 @@ def register():
     registered=[]
     object_property_added=False;scene_property_added=False
     try:
-        for cls in classes + morph.CLASSES + airflow.CLASSES + alpha.CLASSES + procedural.CLASSES:
+        for cls in classes + morph.CLASSES + airflow.CLASSES + alpha.CLASSES + procedural.CLASSES + lighting.CLASSES:
             bpy.utils.register_class(cls);registered.append(cls)
         bpy.types.Object.sf=PointerProperty(type=SFSettings);object_property_added=True
         bpy.types.Scene.sf_system=PointerProperty(type=bpy.types.Object,poll=system_poll);scene_property_added=True
@@ -699,6 +736,6 @@ def unregister():
     if bpy.app.timers.is_registered(tick): bpy.app.timers.unregister(tick)
     _PENDING.clear()
     del bpy.types.Scene.sf_system; del bpy.types.Object.sf
-    for cls in reversed(classes + morph.CLASSES + airflow.CLASSES + alpha.CLASSES + procedural.CLASSES): bpy.utils.unregister_class(cls)
+    for cls in reversed(classes + morph.CLASSES + airflow.CLASSES + alpha.CLASSES + procedural.CLASSES + lighting.CLASSES): bpy.utils.unregister_class(cls)
 
 if __name__=='__main__': register()

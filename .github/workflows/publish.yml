@@ -29,11 +29,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --location --retry 3 --output "$RUNNER_TEMP/blender.tar.xz" https://download.blender.org/release/Blender4.5/blender-4.5.3-linux-x64.tar.xz
+          curl --fail --location --retry 3 --output "$RUNNER_TEMP/blender.tar.xz" https://download.blender.org/release/Blender5.2/blender-5.2.0-linux-x64.tar.xz
           tar -xf "$RUNNER_TEMP/blender.tar.xz" -C "$RUNNER_TEMP"
-          echo "$RUNNER_TEMP/blender-4.5.3-linux-x64" >> "$GITHUB_PATH"
+          echo "$RUNNER_TEMP/blender-5.2.0-linux-x64" >> "$GITHUB_PATH"
       - name: Build and validate extension repository
         run: python scripts/build_repository.py
+      - name: Test Strand Flow guide lighting in Blender 5.2
+        run: blender --background --factory-startup --python tests/strand_flow_lighting_blender.py
       - name: Upload build for inspection
         uses: actions/upload-artifact@v4
         with:
