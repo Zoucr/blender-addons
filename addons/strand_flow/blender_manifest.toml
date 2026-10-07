@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "strand_flow"
-version = "5.1.0"
+version = "5.1.1"
 name = "Strand Flow"
 tagline = "Live strands, RGBA controls and guide-following light spill"
 maintainer = "Lucca / OpenAI"
