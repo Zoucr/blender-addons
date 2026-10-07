@@ -1,4 +1,6 @@
-# Strand Flow 5.1
+# Strand Flow 5.1.1
+
+This patch fixes installation and enabling in Blender's restricted extension context.
 
 Live guide-driven strands for Blender 5.2+. One guide set feeds a Geometry Nodes system, with keyframeable wake deformation, ribbons or tubes, exclusion zones and shader trails. Render the animated range directly. No per-frame geometry bake is required for V5 systems.
 
