@@ -8,7 +8,7 @@ GitHub Actions builds the installable ZIPs and a public Blender extension feed.
 | Add-on | Version | Location in Blender |
 | --- | --- | --- |
 | [Camera Path Rig](addons/camera_path_rig/README.txt) | 1.9.0 | 3D View > N sidebar > Camera Path |
-| [Strand Flow](addons/strand_flow/README.md) | 5.0.0 | 3D View > N sidebar > Strand Flow |
+| [Strand Flow](addons/strand_flow/README.md) | 5.1.0 | 3D View > N sidebar > Strand Flow |
 
 See [import notes and validation](docs/imports/camera_path_rig-1.9.0.md) for
 compatibility and existing-installation guidance.
@@ -80,8 +80,8 @@ The output folder must be absent or empty. Run infrastructure tests with:
 python -m unittest discover -s tests -v
 ```
 
-CI uses Blender 4.5.3 for packaging, not as a claim that every add-on supports
-4.5. Test each add-on's actual functionality in the Blender version it targets.
+CI uses Blender 5.2.0 for packaging and a Strand Flow lighting integration test.
+Test each add-on's actual functionality in the Blender version it targets.
 Package validation is not a runtime or security audit.
 
 ## Release safety
